@@ -149,6 +149,28 @@ class GraspGrid:
             else:
                 self.header = self.header + line
 
+        # Parse the header to get the frequency information
+        for line in self.header.split("\n"):
+            term, arg, res = line.partition(":")
+            # print term
+            if term.strip() == "FREQUENCY":
+                # print line
+                first, arg, rest = res.partition(":")
+                if first.strip() == "start_frequency":
+                    # print rest
+                    # We have a frequency range
+                    start, stop, num_freq = rest.rsplit(",")
+                    self.freqs = numpy.linspace(float(start.split()[0]), float(stop.split()[0]), int(num_freq))
+                else:
+                    # We probably have a list of frequencies
+                    # print res
+                    freqStrs = res.rsplit("'")
+                    freqs = []
+                    for f in freqStrs:
+                        freqs.append(float(f.split()[0]))
+                    self.freqs = numpy.array(freqs)
+                break
+        
         # We've now got through the header text and are ready to read the general
         # field type parameters
         self.ktype = int(f.readline())

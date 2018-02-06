@@ -10,12 +10,19 @@
 import string
 import GraspCut
 
+class GraspCutSet:
+    """Class for containing a set of cuts with a common parameter, such as 
+    frequency, beam, etc."""
+    def __init__(self):
+        self.cuts = []
+
+
 class GraspCutFile:
     """Class for reading, holding, manipulating and writing GRASP 9.3 format 
     output cut files"""
     def __init__(self):
         self.filename = ""
-        self.cuts = []
+        self.cutSets = [GraspCutSet()]
         self.cut_type = "spherical"
         
     def read(self, filename):
@@ -24,17 +31,27 @@ class GraspCutFile:
         file = open(self.filename)
         text = file.readlines()
         
+        self.constants = []  # Constants contains a list of constants (typically phi angles)
+                        # When values are repeated, it indicates that a second set of cuts is
+                        # in the file
+        cutSet = 0
         temp_text = []
         # Read through the file, splitting the lines into separate cuts
         for line in text:
-            if len(line) < 10:
+            if line[0:5] == "Field":
                 # We have the start of a new cut
                 # Have we already collected a cut?
                 if temp_text != []:
                     # Create new cut
                     new_cut = GraspCut.GraspCut()
                     new_cut.read(temp_text)
-                    self.cuts.append(new_cut)
+                    if new_cut.constant in self.constants:
+                        # We must start a new cutSet
+                        self.cutSets.append(GraspCutSet())
+                        cutSet += 1
+                        self.constants = []
+                    self.cutSets[cutSet].cuts.append(new_cut)
+                    self.constants.append(new_cut.constant)
                     temp_text = []
             
             temp_text.append(line)
@@ -43,7 +60,8 @@ class GraspCutFile:
         if temp_text !=[]:
             new_cut = GraspCut.GraspCut()
             new_cut.read(temp_text)
-            self.cuts.append(new_cut)
+            self.cutSets[cutSet].cuts.append(new_cut)
+            self.constants.append(new_cut.constant)
             
         file.close()
 
