@@ -1,96 +1,114 @@
-# A class to parse a GRASP Tor File
+# A class to hold a parsed GRASP Tor File in a collection of objects
 #
 # Paul Grimes, 2018
 #
-# Since Tor file The data from the Tor file will be parsed into nested dictionaries
-# Since I don't know if the order of the keys matters to GRASP, the dictionaries will
-# be OrderedDicts so that order in the file is maintained for writing out.  No file
-# should be so large that the performance hit of this is a concern.
-#
-# A typical entry in the tor file looks like this:
-#
-# SMA200_GaussianHorn_Output_cut  spherical_cut  
-# (
-#   coor_sys         : ref(Primary_coor),
-#   theta_range      : struct(start: -1.0, end: 1.0, np: 1601),
-#   phi_range        : struct(start: 0.0, end: 180.0, np: 9),
-#   polarisation_modification : struct(status: on, coor_sys: ref(SMA200_Output_Beam_coor)),
-#   near_dist        : 0.0 mm,
-#   file_name        : " ",
-#   frequency        : ref(Frequencies)
-# )
-#
-# The first line consists of the name of the object, then the type.  The parameters of the object
-# are contained between brackets.
-#
-# Comments in the file start with //
+# The data from the Tor file will be parsed by a pyparsing parser defined in GraspTorParser
+# and stored in a GraspTorFile class derived from collections.OrderedDict, containing
+# GraspTorObjects and Comments.
+
+import GraspTorParser
+from collections import OrderedDict
+
+class GraspTorValue(self, torValue=None):
+    """A container for values from GraspTorMember objects"""
+    def __init__:
+        self.value = None
+        self.unit = None
+        if torValue:
+            self.fill(torValue)
+    def fill(self, torValue):
+        if len(torValue) > 1:
+            self.value = torValue[0]
+            self.unit = torValue[1]
+        else:
+            self.value = torValue
 
 
-from collections import OrderedDict as odict
+class GraspTorMember:
+    """A container for the member parameter of an GraspTorObject """
+    def __init__(self, torMember=None):
+        self.name = None
+        self.value = None
+        if torMember:
+            self.fill(torMember)
+            
+    def fill(torMember)
+        self.name = torMember[0]
+        self.value = GraspTorValue(torMember[1])
+        
 
+class GraspTorComment:
+    """A container for comments from a GraspTorFile"""
+    def __init__(self, torComment=None):
+        self.name = None
+        self.text = None
+        self.location = None
+        if torComment:
+            self.fill(torComment)
+            
+    def fill(self, torComment):
+        self.name = torComment._name
+        self.location = int(torComment._name.lstrip("comment"))
+        self.text = torComment.text
 
-class GraspTorFile:
-    """A class for parsing, storing and writing out GRASP Tor files"""
-    def __init__(self, file=None):
-        if file != None:
-            self.read(file)
+        
+class GraspTorObject(OrderedDict):
+    """A container for a GraspTorObject, that has a name, a type and a number of members.  Members are
+    stored as an OrderedDict."""
+    def __init__(self, torObj=None):
+        if isinstance(torObj, __builtins__.str):
+            self.readStr(torObj)
+        elif isinstance(torObj, GraspTorParser.ParseResults):
+            self.fill(torObj)
         else:
             pass
             
-    def read(self, file):
-        self._oDict = odict()
+    def readStr(self, torStr):
+        """Read the contents of the string into a torObject and then process the results"""
+        res = GraspTorParser.torObjects.parseString(torStr)
+        self.fill(res)
         
-        commentID = 1
+    def fill(self, torObj):
+        """Fill the GraspTorObject using the pyparsing results"""
+        self._name = torObj._name
+        self._type = torObj._type
+        for r in torObj[2:]:
+            self[r[0]] = GraspTorMember(r)
+
+
+class GraspTorFile(OrderedDict):
+    """A container for objects read from a tor file.  Subclasses OrderedDict to provide a dict of torObjects
+     keyed by name, and sorted by insertion order"""
+    def __init__(self, fileLike=None):
+        """Create a TorFile object, and if fileLike is specified, read the file"""
+        OrderedDict.__init__()
+        self._parser = GraspTorParser.torFile
+        if fileLike:
+            self.read(fileLike)
         
-        # read file line by line
-        while True:
-            # Get line
-            try:
-                line = file.readline()
-            except IOError:
-                break
-            
-            # skip lines with only whitespace
-            if line.strip():
-                continue
-            
-            # Test to see if we have a comment or an object
-            if line[0:2] == "//":
-                # Create a comment and add to oDict
-                commentObj = {"_type":"comment", "_text":line[2,]}
-                self._oDict["comment{:s}".format(commentID)] = commentObj
-                commentID += 1
+    def read(self, fileLike):
+        """Read a list of torObjects and torComments from a fileLike object.  We use pyparsing.ParserElement's parseFile
+        method, which can take either a file-like object or a filename to open.  If you wish to parse an existing string
+        object, used StringIO to supply a file-like object containing the string."""
+        # Parse the file
+        res = self._parser.parseFile(fileLike)
+        
+        # Turn the parse results into objects
+        self.fill(res)
+        
+    def fill(self, torFile):
+        """Fill the GraspTorFile using the parser results in torFile"""
+        for r in torFile:
+            if r._type == "comment":
+                self[r._name] = GraspTorComment(r)
             else:
-                # We have the start of an object
-                # Get the object name and type from first line
-                newObj = {"_name":line.split()[0].strip(), "_type":line.split()[1].strip()}
-                objectText = []
-                while True:
-                    line = file.readline()
-                    if line[0] == "(":
-                        # Start of object
-                        continue
-                    elif line[0] == ")":
-                        # End of object
-                        break
-                    else:
-                        objectText.append(line)
-                        
-                objectParm = self.parseObjectText(objectText)
-                for key in objectParm.keys():
-                    newObj[key] = objectParm[key]
-                
-                self._oDict[newObj["_name"]] = newObj
-                
-    def parseObjectText(self, oText):
-        """Parse object text from between brackets, returning an oDict of keys and values.
+                self[r._name] = GraspTorObject(r)
         
-        This method is intended to work both for multiline text and single line text, so it can
-        be used recursively for structs, sequences, etc."""
-        while True:
-            # Get next parameter name
-            parName, arg, res = oText.partion(":")
-            # Check if parameter value is reference, struct or sequence
-            if res[0:3] == "ref" | res[0:6] == "struct" | res[0:8] == "sequence":
-                type, arg, res = res.partition("(")
-                
+if __name__ == "__main__":
+    import StringIO
+    testFile = StringIO.StringIO(GraspTorParser.test_str)
+    
+    gtf = GraspTorFile(testFile)
+    
+    print(gtf)
+    print(gtf.get_keys())
