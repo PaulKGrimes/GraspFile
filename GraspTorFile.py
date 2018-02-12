@@ -34,8 +34,45 @@ class GraspTorMember:
             
     def fill(torMember)
         self.name = torMember[0]
+        if torMember[1][0]
         self.value = GraspTorValue(torMember[1])
         
+        
+class GraspTorRef:
+    """A container for a value that is a reference to another GraspTorObject"""
+    def __init__(self, torRef=None):
+        self.ref = None
+        if torRef:
+            self.fill(torRef)
+            
+    def fill(self, torRef):
+        self.ref = torRef['ref']
+        
+class GraspTorSequence(__builtins__.list):
+    """A container for a value that is a sequence of GraspTorValues"""
+    def __init__(self, torSeq=None):
+        if torSeq:
+            self.fill(torRef)
+            
+    def fill(self, torSeq):
+        for t in torSeq['sequence']:
+            self.append(GraspTorValue(t))
+            
+            
+class GraspTorStruct(OrderedDict):
+    """A container for a GraspTorStruct, that has a number of members.  Members are
+    stored as an OrderedDict."""
+    def __init__(self, torStruct=None):
+        if torStruct
+            self.fill(torObj)
+        else:
+            pass
+        
+    def fill(self, torStruct):
+        """Fill the GraspTorObject using the pyparsing results"""
+        for t in torStruct['struct']:
+            self[t[0]] = GraspTorMember(t)
+            
 
 class GraspTorComment:
     """A container for comments from a GraspTorFile"""
