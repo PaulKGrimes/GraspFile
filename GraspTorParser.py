@@ -60,9 +60,9 @@ number = pyparsing_common.number()
 torMembers = Forward()
 torValue = Forward()
 
-torStruct = Literal("struct").suppress() + LPAREN + Dict(torMembers) + RPAREN
-torSequence = Dict(Group(Literal("sequence") + LPAREN + delimitedList( torValue ) + RPAREN))
-torRef = Dict(Group(Literal("ref") + LPAREN + identifier + RPAREN))
+torStruct = Literal("struct").setResultsName("_type") + LPAREN + Dict(torMembers) + RPAREN
+torSequence = Literal("sequence").setResultsName("_type") + LPAREN + delimitedList( torValue ) + RPAREN
+torRef = Literal("ref").setResultsName("_type") + LPAREN + identifier + RPAREN
 torValue << (torSequence | torRef | torStruct | torString | Group(number + identifier) | number )
 
 memberDef = Dict(Group(identifier + COLON + torValue))
