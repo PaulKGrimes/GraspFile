@@ -35,7 +35,7 @@ class GraspTorMember:
     """A container for the member parameter of an GraspTorObject """
     def __init__(self, torMember=None):
         self.name = None
-        self.value = None
+        self._value = None
         if torMember:
             self.fill(torMember)
             
@@ -45,18 +45,50 @@ class GraspTorMember:
     
         self.name = torMember[0]
         if torMember._type == "struct":
-            self.value = GraspTorStruct(torMember[1:])
+            self._value = GraspTorStruct(torMember[1:])
             self._type = "struct"
         elif torMember._type == "ref":
-            self.value = GraspTorRef(torMember[1:])
+            self._value = GraspTorRef(torMember[1:])
             self._type = "ref"
         elif torMember._type == "sequence":
-            self.value = GraspTorSequence(torMember[1:])
+            self._value = GraspTorSequence(torMember[1:])
             self._type = "sequence"
         else:
-            self.value = GraspTorValue(torMember[1:])
+            self._value = GraspTorValue(torMember[1:])
             self._type = "value"
             
+    @property
+    def value(self):
+        """Short circuit through torValue to supply tV.value if it is a simple value"""
+        if self._type == "value":
+            return self._value.value
+        else:
+            return self._value
+            
+    @value.setter
+    def value(self, newVal):
+        if self._type == "value":
+            if isinstance(newVal, GraspTorValue):
+                self._value = newVal
+            else:
+                self._value.value = newVal
+        else:
+            self._value = newVal
+            
+    @property
+    def unit(self):
+        """Short circuit through torValue to supply tV.unit if appropriate, else retun None"""
+        if self._type == "value":
+            return self._value.unit
+        else:
+            return None
+    @unit.setter        
+    def unit(self, newUnit):
+        if self._type == "value":
+                self._value.unit = newUnit
+        else:
+            pass
+                
     def __getitem__(self, key):
         return self.value[key].value
         
