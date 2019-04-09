@@ -135,7 +135,7 @@ class GraspGrid:
         self.fields = []
     
     
-    def readGraspGrid(self, f):
+    def readGraspGrid(self, fi):
         """Reads GRASP output grid files from file object and fills a number of variables 
         and numpy arrays with the data, befroe returning them as a tuple"""
     
@@ -143,7 +143,7 @@ class GraspGrid:
         self.header = ""
     
         while 1:
-            line = f.readline()
+            line = fi.readline()
             if line[0:4] == "++++":
                 break
             else:
@@ -173,8 +173,8 @@ class GraspGrid:
         
         # We've now got through the header text and are ready to read the general
         # field type parameters
-        self.ktype = int(f.readline())
-        line = f.readline().split()
+        self.ktype = int(fi.readline())
+        line = fi.readline().split()
         self.nset = int(line[0])
         self.icomp = int(line[1])
         self.ncomp = int(line[2])
@@ -182,7 +182,7 @@ class GraspGrid:
         
         self.beamCenters = []
         for i in range(self.nset):
-            line = f.readline().split()
+            line = fi.readline().split()
             self.beamCenters.append([int(line[0]), int(line[1])])
             
         # field type parameters are now understood
@@ -190,6 +190,6 @@ class GraspGrid:
         for i in range(self.nset):
             dataset = GraspField()
             dataset.beamCenter = self.beamCenters[i]
-            dataset.readGraspField(f, self.ncomp)
+            dataset.readGraspField(fi, self.ncomp)
             self.fields.append(dataset)
 

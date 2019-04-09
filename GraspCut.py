@@ -108,7 +108,7 @@ class GraspCut:
 
     def write(self):
         """Write local arrays to disk in GRASP cut file format"""
-        
+        pass
         
     def selectPosRange(self, pos_min, pos_max):
         """Returns a cut containing only the positions between pos_min
