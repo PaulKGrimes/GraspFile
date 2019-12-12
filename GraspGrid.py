@@ -117,9 +117,9 @@ class GraspField:
 
     def rotatePolarization(self, angle=45.0):
         '''Rotate the basis of the polarization by <angle>'''
-        ang = np.deg2rad(angle)
-        output0 = self.field[:,:,0]*np.cos(ang)-self.field[:,:,1]*np.sin(ang)
-        output1 = self.field[:,:,1]*np.cos(ang)+self.field[:,:,0]*np.sin(ang)
+        ang = numpy.deg2rad(angle)
+        output0 = self.field[:,:,0]*numpy.cos(ang)-self.field[:,:,1]*numpy.sin(ang)
+        output1 = self.field[:,:,1]*numpy.cos(ang)+self.field[:,:,0]*numpy.sin(ang)
         self.field[:,:,0] = output0
         self.field[:,:,1] = output1
 
