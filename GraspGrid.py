@@ -107,7 +107,7 @@ class GraspField:
                             numpy.linspace(self.gridMin_y, self.gridMax_y, self.gridN_y))
 
     def radiusGrid(self, center=None):
-        """Return an array holding the radiuses of each point from the beam centre"""
+        """Return an array holding the radii of each point from the beam centre"""
         grid_x, grid_y = self.gridPos()
 
         if center==None:
@@ -128,7 +128,7 @@ class GraspField:
 class GraspGrid:
     """Object holding the data in contained in a general Grasp grid field output"""
     def __init__(self):
-        """Create empty variables or lists of attributes for haolding data for each dataset"""
+        """Create empty variables or lists of attributes for holding data for each dataset"""
         # Text Header
         self.header = ""
 
