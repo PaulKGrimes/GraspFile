@@ -17,7 +17,7 @@ import matplotlib.pyplot as pp
 class GraspField:
     """Object holding a single dataset from a Grasp field on grid output file (*.grd)
 
-    The filed is held in a complex numpy array of shape (gridN_x, gridN_y, ncomp)
+    The field is held in a complex numpy array of shape (gridN_x, gridN_y, ncomp)
     where gridN_x and gridN_y set the number of points in the grid and ncomp is the
     number of field components"""
     # This layout of array should mean that the polarisation components for a point
@@ -145,7 +145,7 @@ class GraspGrid:
 
     def readGraspGrid(self, fi):
         """Reads GRASP output grid files from file object and fills a number of variables
-        and numpy arrays with the data, befroe returning them as a tuple"""
+        and numpy arrays with the data, before returning them as a tuple"""
 
         # Loop over initial lines before "++++" getting text
         self.header = ""
