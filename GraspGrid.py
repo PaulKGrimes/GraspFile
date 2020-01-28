@@ -71,7 +71,7 @@ class GraspField:
             if self.kLimit == 1:
                 line = f.readline().split()
                 i_s = int(line[0])-1
-                i_e = int(line[1])-1
+                i_e = i_s + int(line[1])
             else:
                 i_s = 0
                 i_e = self.gridN_x
@@ -145,7 +145,7 @@ class GraspGrid:
 
     def readGraspGrid(self, fi):
         """Reads GRASP output grid files from file object and fills a number of variables
-        and numpy arrays with the data, before returning them as a tuple"""
+        and numpy arrays with the data"""
 
         # Loop over initial lines before "++++" getting text
         self.header = ""
